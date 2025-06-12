@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -11,38 +10,26 @@ public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+
+    //Player ship
     private Texture2D _spaceship;
     private Vector2 _spaceshipPosition;
     private float _spaceshipRotate;
+    private const float _spaceshipScale = 0.3f;
+
+    //Player lazers
     private Texture2D _laserBlastRed;
-    private Vector2 _laserBlastRedPostition;
     private float _laserBlastRedRotate;
     private const float _laserBlastRedScale = 1.0f;
-    private const float _spaceshipScale = 0.3f;
     private List<Laser> _activeLasers = new();
+
+    //Enemy 
+    private Texture2D _enemySpaceship;
+    private List<Enemy> _enemies = new List<Enemy>();
+
+
+    //Controller values
     private float _lastTriggerValue = 0f;
-
-
-
-    public class Laser
-    {
-        public Vector2 Position;
-        public float Rotation;
-        public float Speed = 10f;
-
-        public Laser(Vector2 startPos, float rotation)
-        {
-            Position = startPos;
-            Rotation = rotation;
-        }
-
-        public void Update()
-        {
-            Vector2 direction = new((float)Math.Sin(Rotation), -(float)Math.Cos(Rotation));
-            Position += direction * Speed;
-        }
-    }
-
 
     public Game1()
     {
@@ -57,8 +44,6 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-
         base.Initialize();
     }
 
@@ -67,7 +52,7 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _spaceship = Content.Load<Texture2D>("images/spaceship");
         _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
-        // TODO: use this.Content to load your game content here
+        _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
     }
 
@@ -81,39 +66,7 @@ public class Game1 : Game
         float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
         float halfH = _spaceship.Height * _spaceshipScale * 0.5f;
 
-        if (Keyboard.GetState().IsKeyDown(Keys.W) || Keyboard.GetState().IsKeyDown(Keys.Up))
-        {
-            if (_spaceshipPosition.Y - halfH > 0)
-            {
-                _spaceshipPosition.Y -= 3.5f; // 5px per frame
-                _spaceshipRotate = MathHelper.ToRadians(0);
-            }
-        }
-        if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down))
-        {
-            if (_spaceshipPosition.Y + halfH < Window.ClientBounds.Height)
-            {
-                _spaceshipPosition.Y += 3.5f; // 5px per frame
-                _spaceshipRotate = MathHelper.ToRadians(180);
 
-            }
-        }
-        if (Keyboard.GetState().IsKeyDown(Keys.D) || Keyboard.GetState().IsKeyDown(Keys.Right))
-        {
-            if (_spaceshipPosition.X + halfW < Window.ClientBounds.Width)
-            {
-                _spaceshipPosition.X += 3.5f; // 5px per frame
-                _spaceshipRotate = MathHelper.ToRadians(90);
-            }
-        }
-        if (Keyboard.GetState().IsKeyDown(Keys.A) || Keyboard.GetState().IsKeyDown(Keys.Left))
-        {
-            if (_spaceshipPosition.X - halfW > 0)
-            {
-                _spaceshipPosition.X -= 3.5f; // 5px per frame
-                _spaceshipRotate = MathHelper.ToRadians(270);
-            }
-        }
         //Stick movement --------------------------------------------------------------------------------------
 
         // Get the gamepad state
@@ -145,27 +98,6 @@ public class Game1 : Game
             _spaceshipRotate = (float)Math.Atan2(rightStick.Y, rightStick.X) + MathHelper.PiOver2;
             _laserBlastRedRotate = _spaceshipRotate;
 
-        }
-
-        // Keyboard Boost
-        if (Keyboard.GetState().IsKeyDown(Keys.Space))
-        {
-            if (Keyboard.GetState().IsKeyDown(Keys.W) && Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                if (_spaceshipPosition.Y - halfH > 0) { _spaceshipPosition.Y -= 5f; }
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.S) && Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                if (_spaceshipPosition.Y + halfH < Window.ClientBounds.Height) { _spaceshipPosition.Y += 5f; }
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.D) && Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                if (_spaceshipPosition.X + halfW < Window.ClientBounds.Width) { _spaceshipPosition.X += 5f; }
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.A) && Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                if (_spaceshipPosition.X - halfW > 0) { _spaceshipPosition.X -= 5f; }
-            }
         }
 
         Vector2 laserOffset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate));
@@ -203,36 +135,34 @@ public class Game1 : Game
         _spriteBatch.Begin();
         // Draw the spaceship texture
         _spriteBatch.Draw(_spaceship, _spaceshipPosition, null, Color.White, _spaceshipRotate, new Vector2(_spaceship.Width * 0.5f, _spaceship.Height * 0.5f), _spaceshipScale, SpriteEffects.None, 0.0f);
-        // Always end the sprite batch when finished.
-        _spriteBatch.End();
 
-        _spriteBatch.Begin();
-            foreach (Laser laser in _activeLasers)
-            {
-                _spriteBatch.Draw(
-                    _laserBlastRed,
-                    laser.Position,
-                    null,
-                    Color.White,
-                    laser.Rotation,
-                    new Vector2(_laserBlastRed.Width * 4.0f, _laserBlastRed.Height * 0.6f),
-                    _laserBlastRedScale,
-                    SpriteEffects.None,
-                    0.0f
-                );
-                _spriteBatch.Draw(
-                    _laserBlastRed,
-                    laser.Position,
-                    null,
-                    Color.White,
-                    laser.Rotation,
-                    new Vector2(_laserBlastRed.Width * -3.05f, _laserBlastRed.Height * 0.6f),
-                    _laserBlastRedScale,
-                    SpriteEffects.None,
-                    0.0f
-                );
-            }
-            _spriteBatch.End();
+        foreach (Laser laser in _activeLasers)
+        {
+            _spriteBatch.Draw(
+                _laserBlastRed,
+                laser.Position,
+                null,
+                Color.White,
+                laser.Rotation,
+                new Vector2(_laserBlastRed.Width * 4.0f, _laserBlastRed.Height * 0.6f),
+                _laserBlastRedScale,
+                SpriteEffects.None,
+                0.0f
+            );
+            _spriteBatch.Draw(
+                _laserBlastRed,
+                laser.Position,
+                null,
+                Color.White,
+                laser.Rotation,
+                new Vector2(_laserBlastRed.Width * -3.05f, _laserBlastRed.Height * 0.6f),
+                _laserBlastRedScale,
+                SpriteEffects.None,
+                0.0f
+            );
+        }
+        _spriteBatch.End();
         base.Draw(gameTime);
     }
 }
+

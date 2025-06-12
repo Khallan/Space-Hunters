@@ -1,0 +1,10 @@
+
+namespace MazeHunter
+{
+    class Enemy
+    {
+        
+        
+    }
+
+}
