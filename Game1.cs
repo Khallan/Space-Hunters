@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,12 +15,33 @@ public class Game1 : Game
     private Vector2 _spaceshipPosition;
     private float _spaceshipRotate;
     private Texture2D _laserBlastRed;
-    //private float _laserBlastRedRotate;
     private Vector2 _laserBlastRedPostition;
     private float _laserBlastRedRotate;
-    private const float _laserBlastRedScale = 0.3f;
-
+    private const float _laserBlastRedScale = 1.0f;
     private const float _spaceshipScale = 0.3f;
+    private List<Laser> _activeLasers = new();
+    private float _lastTriggerValue = 0f;
+
+
+
+    public class Laser
+    {
+        public Vector2 Position;
+        public float Rotation;
+        public float Speed = 10f;
+
+        public Laser(Vector2 startPos, float rotation)
+        {
+            Position = startPos;
+            Rotation = rotation;
+        }
+
+        public void Update()
+        {
+            Vector2 direction = new((float)Math.Sin(Rotation), -(float)Math.Cos(Rotation));
+            Position += direction * Speed;
+        }
+    }
 
 
     public Game1()
@@ -44,11 +66,9 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _spaceship = Content.Load<Texture2D>("images/spaceship");
-
+        _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
         // TODO: use this.Content to load your game content here
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
-       
-
     }
 
     protected override void Update(GameTime gameTime)
@@ -57,11 +77,7 @@ public class Game1 : Game
         {
             Exit();
         }
-
-
         // Movement ---------------------------------------------------------------------------------------------
-
-
         float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
         float halfH = _spaceship.Height * _spaceshipScale * 0.5f;
 
@@ -103,7 +119,6 @@ public class Game1 : Game
         // Get the gamepad state
         Vector2 leftStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Left;
         Vector2 rightStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Right;
-        float rightTrigger = GamePad.GetState(PlayerIndex.One).Triggers.Right;
 
         // Invert the Y axis so that pushing up gives a positive value
         leftStick.Y *= -1;
@@ -132,9 +147,6 @@ public class Game1 : Game
 
         }
 
-
-
-
         // Keyboard Boost
         if (Keyboard.GetState().IsKeyDown(Keys.Space))
         {
@@ -156,17 +168,36 @@ public class Game1 : Game
             }
         }
 
-        _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
-        _laserBlastRedPostition = new Vector2(_spaceshipPosition.X * 0.25f, _spaceshipPosition.Y * 0.32f);
+        Vector2 laserOffset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate));
+        //_laserBlastRedPostition = _spaceshipPosition + laserOffset * 40f; // 40 pixels in front
+        _laserBlastRedRotate = _spaceshipRotate;
 
+        for (int i = _activeLasers.Count - 1; i >= 0; i--)
+        {
+            _activeLasers[i].Update();
 
-
+            // Remove laser if off-screen
+            if (_activeLasers[i].Position.X < 0 || _activeLasers[i].Position.X > Window.ClientBounds.Width ||
+                _activeLasers[i].Position.Y < 0 || _activeLasers[i].Position.Y > Window.ClientBounds.Height)
+            {
+                _activeLasers.RemoveAt(i);
+            }
+        }
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
+        float currentTriggerValue = GamePad.GetState(PlayerIndex.One).Triggers.Right;
+        if (currentTriggerValue > 0.2f && _lastTriggerValue <= 0.2f)
+        {
+            Vector2 offset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate)) * 5f;
+            _activeLasers.Add(new Laser(_spaceshipPosition + offset, _spaceshipRotate));
+        }
+
+        _lastTriggerValue = currentTriggerValue;
+
+        GraphicsDevice.Clear(new Color(70, 70, 70));
 
         // Begin the sprite batch to prepare for rendering.
         _spriteBatch.Begin();
@@ -175,13 +206,33 @@ public class Game1 : Game
         // Always end the sprite batch when finished.
         _spriteBatch.End();
 
-        if (GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed)
-        {
-            Debug.WriteLine("X button pressed");
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(_laserBlastRed, _laserBlastRedPostition, null, Color.White, _laserBlastRedRotate, new Vector2(_laserBlastRed.Height * 1.0f, _laserBlastRed.Width * 0.5f), _laserBlastRedScale, SpriteEffects.None, 0.0f);
+        _spriteBatch.Begin();
+            foreach (Laser laser in _activeLasers)
+            {
+                _spriteBatch.Draw(
+                    _laserBlastRed,
+                    laser.Position,
+                    null,
+                    Color.White,
+                    laser.Rotation,
+                    new Vector2(_laserBlastRed.Width * 4.0f, _laserBlastRed.Height * 0.6f),
+                    _laserBlastRedScale,
+                    SpriteEffects.None,
+                    0.0f
+                );
+                _spriteBatch.Draw(
+                    _laserBlastRed,
+                    laser.Position,
+                    null,
+                    Color.White,
+                    laser.Rotation,
+                    new Vector2(_laserBlastRed.Width * -3.05f, _laserBlastRed.Height * 0.6f),
+                    _laserBlastRedScale,
+                    SpriteEffects.None,
+                    0.0f
+                );
+            }
             _spriteBatch.End();
-        }
         base.Draw(gameTime);
     }
 }
