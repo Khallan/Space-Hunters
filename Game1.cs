@@ -26,12 +26,8 @@ public class Game1 : Game
     //Enemy 
     private Texture2D _enemySpaceship;
     private List<Enemy> _enemies = new List<Enemy>();
-    private Vector2 _enemySpaceshipPosition;
-    private float _enemySpaceshipRotate;
-    private const float _enemySpaceshipScale = 0.3f;
     private bool _enemyIsAlive = true;
     private int enemyHealth = 0;
-
 
 
     //Controller values
@@ -59,10 +55,7 @@ public class Game1 : Game
         _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
         _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
-
-        // Spawn 1 enemy as a test
-        //Vector2 spawnPos = new Vector2(600, 200);
-        _enemySpaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _enemySpaceship.Width * 0.5f * 0.3f), Window.ClientBounds.Height * 0.5f);
+        _enemies.Add(new Enemy(_enemySpaceship, new Vector2((float)(Window.ClientBounds.Width * 1.0f - _spaceship.Width *0.5 * 0.3), Window.ClientBounds.Height * 0.5f)));
     }
 
     protected override void Update(GameTime gameTime)
@@ -116,23 +109,31 @@ public class Game1 : Game
         {
             _activeLasers[i].Update();
 
-            if (_activeLasers[i].Position.X < 0 || _activeLasers[i].Position.X > Window.ClientBounds.Width || _activeLasers[i].Position.Y < 0 || _activeLasers[i].Position.Y > Window.ClientBounds.Height)
+            if (_activeLasers[i].Position.X < 0 || _activeLasers[i].Position.X > Window.ClientBounds.Width ||
+                _activeLasers[i].Position.Y < 0 || _activeLasers[i].Position.Y > Window.ClientBounds.Height)
             {
                 _activeLasers.RemoveAt(i);
                 continue;
             }
 
-            // Check collision with enemy
-            if (_enemyIsAlive && Vector2.Distance(_activeLasers[i].Position, _enemySpaceshipPosition) < 60f)
+            // Check against all enemies
+            foreach (var enemy in _enemies)
             {
-                enemyHealth++;
-                _activeLasers.RemoveAt(i);     // remove laser
-                if (enemyHealth == 3)
+                if (enemy.CheckCollision(_activeLasers[i].Position))
                 {
-                    _enemyIsAlive = false;         // mark enemy as dead
+                    enemy.TakeDamage();
+                    _activeLasers.RemoveAt(i);
+                    break;
                 }
             }
         }
+
+        // Update enemies
+        foreach (var enemy in _enemies)
+        {
+            enemy.Update(_spaceshipPosition);
+        }
+
         base.Update(gameTime);
     }
 
@@ -181,12 +182,10 @@ public class Game1 : Game
         }
 
         //Enemy Spawning
-        if (_enemyIsAlive)
+        foreach (var enemy in _enemies)
         {
-            _spriteBatch.Draw(_enemySpaceship, _enemySpaceshipPosition, null, Color.White, _enemySpaceshipRotate, new Vector2(_enemySpaceship.Width * 0.5f, _enemySpaceship.Height * 0.5f), _enemySpaceshipScale, SpriteEffects.None, 0.0f);
+            enemy.Draw(_spriteBatch);
         }
-
-
         _spriteBatch.End();
         base.Draw(gameTime);
     }
