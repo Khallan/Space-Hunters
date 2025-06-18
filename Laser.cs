@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace MazeHunter
 {
@@ -8,6 +9,13 @@ namespace MazeHunter
         public Vector2 Position;
         public float Rotation;
         public float Speed = 10f;
+        private Texture2D laserBlastGreen;
+
+        public Laser(Texture2D laserBlastGreen)
+        {
+            this.laserBlastGreen = laserBlastGreen;
+        }
+
         public Laser(Vector2 startPos, float rotation)
         {
             Position = startPos;

@@ -18,6 +18,7 @@ public class Game1 : Game
     private Vector2 _spaceshipPosition;
     private float _spaceshipRotate;
     private const float _spaceshipScale = 0.3f;
+    private int _playerHealth = 5;
 
     //Player lazers
     private Texture2D _laserBlastRed;
@@ -72,7 +73,6 @@ public class Game1 : Game
         // Movement ---------------------------------------------------------------------------------------------
         float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
         float halfH = _spaceship.Height * _spaceshipScale * 0.5f;
-
 
         //Stick movement --------------------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ public class Game1 : Game
         // Update enemies
         foreach (var enemy in _enemies)
         {
-            enemy.Update(_spaceshipPosition);
+            enemy.Update(_spaceshipPosition, gameTime);
         }
 
 
@@ -154,7 +154,7 @@ public class Game1 : Game
                     int spawn_y = rng.Next(Window.ClientBounds.Height * -1, Window.ClientBounds.Height * 2);
                     spawnPos = new Vector2(spawn_x, spawn_y);
                 } while (spawnPos.X >= 0 && spawnPos.X <= Window.ClientBounds.Width && spawnPos.Y >= 0 && spawnPos.Y <= Window.ClientBounds.Height);
-                _enemies.Add(new Enemy(_enemySpaceship, spawnPos));
+                _enemies.Add(new Enemy(_enemySpaceship, spawnPos, _laserBlastRed));
 
 
             }
