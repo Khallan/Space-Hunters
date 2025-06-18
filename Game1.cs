@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Security.Principal;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -26,11 +28,12 @@ public class Game1 : Game
     //Enemy 
     private Texture2D _enemySpaceship;
     private List<Enemy> _enemies = new List<Enemy>();
-    private bool _enemyIsAlive = true;
-    private int enemyHealth = 0;
+    Random rng = new Random();
+    private Vector2 spawnPos;
+
 
     //Game 
-    private int _levelCounter = 0;
+    private int _levelCounter;
 
 
     //Controller values
@@ -58,7 +61,6 @@ public class Game1 : Game
         _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
         _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
-        _enemies.Add(new Enemy(_enemySpaceship, new Vector2((float)(Window.ClientBounds.Width * 1.0f - _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f)));
     }
 
     protected override void Update(GameTime gameTime)
@@ -135,6 +137,28 @@ public class Game1 : Game
         foreach (var enemy in _enemies)
         {
             enemy.Update(_spaceshipPosition);
+        }
+
+
+        //Removes all enemies from the list, then adds a new wave of enemies
+        _enemies.RemoveAll(e => !e.IsAlive);
+
+        if (_enemies.Count == 0)
+        {
+            for (int i = 0; i <= _levelCounter; i++)
+            {
+                //Random spawning
+                do
+                {
+                    int spawn_x = rng.Next(Window.ClientBounds.Width * -1, Window.ClientBounds.Width * 2);
+                    int spawn_y = rng.Next(Window.ClientBounds.Height * -1, Window.ClientBounds.Height * 2);
+                    spawnPos = new Vector2(spawn_x, spawn_y);
+                } while (spawnPos.X >= 0 && spawnPos.X <= Window.ClientBounds.Width && spawnPos.Y >= 0 && spawnPos.Y <= Window.ClientBounds.Height);
+                _enemies.Add(new Enemy(_enemySpaceship, spawnPos));
+
+
+            }
+            _levelCounter++;
         }
 
         base.Update(gameTime);
