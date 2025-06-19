@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/font/File.spritefont</SourceFile>
+  <SourceTime>2025-06-19T13:54:29.1299815-04:00</SourceTime>
+  <DestFile>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/bin/DesktopGL/Content/font/pauseText.xnb</DestFile>
+  <DestTime>2025-06-19T14:29:21.9727632-04:00</DestTime>
+  <Importer>FontDescriptionImporter</Importer>
+  <ImporterTime>2025-06-02T06:31:02-04:00</ImporterTime>
+  <Processor>FontDescriptionProcessor</Processor>
+  <ProcessorTime>2025-06-02T06:31:02-04:00</ProcessorTime>
+  <Parameters>
+    <Key>PremultiplyAlpha</Key>
+    <Value>True</Value>
+  </Parameters>
+  <Parameters>
+    <Key>TextureFormat</Key>
+    <Value>Compressed</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>

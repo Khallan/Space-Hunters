@@ -18,7 +18,14 @@
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:font/File.spritefont;font/UIFont.spritefont
+/build:font/File.spritefont;font/pauseText.spritefont
+
+#begin font/playerHealth.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font/playerHealth.spritefont
 
 #begin images/laserBlastRed.png
 /importer:TextureImporter

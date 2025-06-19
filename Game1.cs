@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net.Http;
 using System.Security.Principal;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -38,10 +39,11 @@ public class Game1 : Game
 
 
     //Game 
+    private float _masterGameTime = 0.0f;
     private int _levelCounter;
     private bool _gamePause = false;
     private ButtonState _previousStartButtonState = ButtonState.Released;
-    private SpriteFont _uiFont;
+    private SpriteFont _pauseText;
 
 
 
@@ -71,7 +73,8 @@ public class Game1 : Game
         _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
         _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
-        _uiFont = Content.Load<SpriteFont>("font/UIFont");
+        _pauseText = Content.Load<SpriteFont>("font/PauseText");
+
     }
 
     protected override void Update(GameTime gameTime)
@@ -87,6 +90,7 @@ public class Game1 : Game
 
         if (!_gamePause)
         {
+            _masterGameTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 Exit();
@@ -213,7 +217,12 @@ public class Game1 : Game
                 }
 
             }
+            if (_playerHealth == 0)
+            {
+                playerIsAlive = false;
+            }
         }
+
         base.Update(gameTime);
     }
 
@@ -277,12 +286,18 @@ public class Game1 : Game
         if (_gamePause)
         {
             string pauseText = "PAUSED";
-            Vector2 textSize = _uiFont.MeasureString(pauseText);
+            Vector2 textSize = _pauseText.MeasureString(pauseText);
             Vector2 screenCenter = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height) * 0.5f;
             Vector2 textPosition = screenCenter - textSize * 0.5f;
 
-            _spriteBatch.DrawString(_uiFont, pauseText, textPosition, Color.White);
+            _spriteBatch.DrawString(_pauseText, pauseText, textPosition, Color.White);
         }
+        string _playerHealthText = _playerHealth.ToString();
+        Vector2 _playerHealthtextSize = _pauseText.MeasureString(_playerHealthText);
+        Vector2 screenTopRight = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height) * 0.0f;
+        Vector2 _playerHeathTextPostion = screenTopRight;
+        _spriteBatch.DrawString(_pauseText,_playerHealthText, _playerHeathTextPostion, Color.White);
+
         _spriteBatch.End();
         base.Draw(gameTime);
     }
