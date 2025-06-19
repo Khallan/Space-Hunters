@@ -20,8 +20,10 @@ public class Game1 : Game
     private float _spaceshipRotate;
     private const float _spaceshipScale = 0.3f;
     private int _playerHealth = 5;
+    private bool playerIsAlive = true;
+    private float _hitIndicatorTimer = 0.0f;
 
-    //Player lazers
+    //Player lasers
     private Texture2D _laserBlastRed;
     private float _laserBlastRedRotate;
     private const float _laserBlastRedScale = 1.0f;
@@ -37,6 +39,9 @@ public class Game1 : Game
 
     //Game 
     private int _levelCounter;
+    private bool _gamePause = false;
+    private ButtonState _previousStartButtonState = ButtonState.Released;
+
 
 
     //Controller values
@@ -68,127 +73,144 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        var currentGameState = GamePad.GetState(PlayerIndex.One);
+        ButtonState currentStartState = currentGameState.Buttons.Start;
+        if (currentStartState == ButtonState.Pressed && _previousStartButtonState == ButtonState.Released)
         {
-            Exit();
+            _gamePause = !_gamePause;
         }
-        // Movement ---------------------------------------------------------------------------------------------
-        float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
-        float halfH = _spaceship.Height * _spaceshipScale * 0.5f;
+        _previousStartButtonState = currentStartState;
 
-        //Stick movement --------------------------------------------------------------------------------------
 
-        // Get the gamepad state
-        Vector2 leftStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Left;
-        Vector2 rightStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Right;
-
-        // Invert the Y axis so that pushing up gives a positive value
-        leftStick.Y *= -1;
-        rightStick.Y *= -1;
-
-        // Check if the stick movement is significant enough (to avoid jitter)
-        if (leftStick.LengthSquared() > 0.1f)
+        if (!_gamePause)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed)
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
-                _spaceshipPosition += leftStick * 7.0f; //Speed boost
-            }
-            else
-            {
-                _spaceshipPosition += leftStick * 3.5f; //Regular traveling
+                Exit();
             }
 
-            // Clamp position to screen bounds
-            _spaceshipPosition.X = MathHelper.Clamp(_spaceshipPosition.X, halfW, Window.ClientBounds.Width - halfW);
-            _spaceshipPosition.Y = MathHelper.Clamp(_spaceshipPosition.Y, halfH, Window.ClientBounds.Height - halfH);
-        }
-        if (rightStick.LengthSquared() > 0.1f)
-        {
-            _spaceshipRotate = (float)Math.Atan2(rightStick.Y, rightStick.X) + MathHelper.PiOver2;
+            // Movement ---------------------------------------------------------------------------------------------
+            float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
+            float halfH = _spaceship.Height * _spaceshipScale * 0.5f;
+
+            //Stick movement --------------------------------------------------------------------------------------
+
+            if (playerIsAlive == true)
+            {
+                // Get the gamepad state
+                Vector2 leftStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Left;
+                Vector2 rightStick = GamePad.GetState(PlayerIndex.One).ThumbSticks.Right;
+
+                // Invert the Y axis so that pushing up gives a positive value
+                leftStick.Y *= -1;
+                rightStick.Y *= -1;
+
+                // Check if the stick movement is significant enough (to avoid jitter)
+                if (leftStick.LengthSquared() > 0.1f)
+                {
+                    if (GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed)
+                    {
+                        _spaceshipPosition += leftStick * 7.0f; //Speed boost
+                    }
+                    else
+                    {
+                        _spaceshipPosition += leftStick * 3.5f; //Regular traveling
+                    }
+
+                    // Clamp position to screen bounds
+                    _spaceshipPosition.X = MathHelper.Clamp(_spaceshipPosition.X, halfW, Window.ClientBounds.Width - halfW);
+                    _spaceshipPosition.Y = MathHelper.Clamp(_spaceshipPosition.Y, halfH, Window.ClientBounds.Height - halfH);
+                }
+                if (rightStick.LengthSquared() > 0.1f)
+                {
+                    _spaceshipRotate = (float)Math.Atan2(rightStick.Y, rightStick.X) + MathHelper.PiOver2;
+                    _laserBlastRedRotate = _spaceshipRotate;
+
+                }
+
+            }
+
+            Vector2 laserOffset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate));
             _laserBlastRedRotate = _spaceshipRotate;
 
-        }
-
-        Vector2 laserOffset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate));
-        _laserBlastRedRotate = _spaceshipRotate;
-
-        for (int i = _activeLasers.Count - 1; i >= 0; i--)
-        {
-            _activeLasers[i].Update();
-
-            if (_activeLasers[i].Position.X < 0 || _activeLasers[i].Position.X > Window.ClientBounds.Width ||
-                _activeLasers[i].Position.Y < 0 || _activeLasers[i].Position.Y > Window.ClientBounds.Height)
+            for (int i = _activeLasers.Count - 1; i >= 0; i--)
             {
-                _activeLasers.RemoveAt(i);
-                continue;
+                _activeLasers[i].Update();
+
+                if (_activeLasers[i].Position.X < 0 || _activeLasers[i].Position.X > Window.ClientBounds.Width ||
+                    _activeLasers[i].Position.Y < 0 || _activeLasers[i].Position.Y > Window.ClientBounds.Height)
+                {
+                    _activeLasers.RemoveAt(i);
+                    continue;
+                }
+
+                // Check against all enemies if an enemy got hit
+                foreach (var enemy in _enemies)
+                {
+                    if (enemy.CheckCollision(_activeLasers[i].Position))
+                    {
+                        enemy.TakeDamage();
+                        _activeLasers.RemoveAt(i);
+                        break;
+                    }
+                }
             }
 
-            // Check against all enemies if an enemy got hit
+            // Update enemies
             foreach (var enemy in _enemies)
             {
-                if (enemy.CheckCollision(_activeLasers[i].Position))
+                enemy.Update(_spaceshipPosition, gameTime);
+            }
+
+
+            //Removes all enemies from the list, then adds a new wave of enemies
+            _enemies.RemoveAll(e => !e.IsAlive);
+
+            if (_enemies.Count == 0)
+            {
+                for (int i = 0; i <= _levelCounter; i++)
                 {
-                    enemy.TakeDamage();
-                    _activeLasers.RemoveAt(i);
-                    break;
+                    //Random spawning
+                    do
+                    {
+                        int spawn_x = rng.Next(Window.ClientBounds.Width * -1, Window.ClientBounds.Width * 2);
+                        int spawn_y = rng.Next(Window.ClientBounds.Height * -1, Window.ClientBounds.Height * 2);
+                        spawnPos = new Vector2(spawn_x, spawn_y);
+                    } while (spawnPos.X >= 0 && spawnPos.X <= Window.ClientBounds.Width && spawnPos.Y >= 0 && spawnPos.Y <= Window.ClientBounds.Height);
+                    _enemies.Add(new Enemy(_enemySpaceship, spawnPos, _laserBlastRed));
+
+
                 }
+                _levelCounter++;
             }
-        }
 
-        // Update enemies
-        foreach (var enemy in _enemies)
-        {
-            enemy.Update(_spaceshipPosition, gameTime);
-        }
-
-
-        //Removes all enemies from the list, then adds a new wave of enemies
-        _enemies.RemoveAll(e => !e.IsAlive);
-
-        if (_enemies.Count == 0)
-        {
-            for (int i = 0; i <= _levelCounter; i++)
+            //Player collison check
+            foreach (var enemy in _enemies)
             {
-                //Random spawning
-                do
-                {
-                    int spawn_x = rng.Next(Window.ClientBounds.Width * -1, Window.ClientBounds.Width * 2);
-                    int spawn_y = rng.Next(Window.ClientBounds.Height * -1, Window.ClientBounds.Height * 2);
-                    spawnPos = new Vector2(spawn_x, spawn_y);
-                } while (spawnPos.X >= 0 && spawnPos.X <= Window.ClientBounds.Width && spawnPos.Y >= 0 && spawnPos.Y <= Window.ClientBounds.Height);
-                _enemies.Add(new Enemy(_enemySpaceship, spawnPos, _laserBlastRed));
-
-
-            }
-            _levelCounter++;
-        }
-
-        //Player collison check
-        foreach (var enemy in _enemies)
-        {
-            float collisionRadius = 65f;
-            _timeSinceLastCollision += (float)gameTime.ElapsedGameTime.TotalSeconds; //Move this outside the foreach if i want to ignore pileup
-            if (enemy.IsAlive && Vector2.Distance(enemy.Position, _spaceshipPosition) < collisionRadius && _timeSinceLastCollision > 1.0f)
-            {
-                _playerHealth--;
-                _timeSinceLastCollision = 0f;
-
-            }
-            for (int i = enemy.EnemyLasers.Count - 1; i >= 0; i--)
-            {
-                Laser laser = enemy.EnemyLasers[i];
-                float hitRadius = 40f;
-                if (Vector2.Distance(laser.Position, _spaceshipPosition) < hitRadius)
+                float collisionRadius = 65f;
+                _timeSinceLastCollision += (float)gameTime.ElapsedGameTime.TotalSeconds; //Move this outside the foreach if i want to ignore pileup
+                _hitIndicatorTimer += (float)gameTime.ElapsedGameTime.TotalSeconds; //Counts time fore hit indicator
+                if (enemy.IsAlive && Vector2.Distance(enemy.Position, _spaceshipPosition) < collisionRadius && _timeSinceLastCollision > 1.0f)
                 {
                     _playerHealth--;
-                    enemy.EnemyLasers.RemoveAt(i);
+                    _timeSinceLastCollision = 0f;
+                    _hitIndicatorTimer = 0f;
+
                 }
+                for (int i = enemy.EnemyLasers.Count - 1; i >= 0; i--)
+                {
+                    Laser laser = enemy.EnemyLasers[i];
+                    float hitRadius = 40f;
+                    if (Vector2.Distance(laser.Position, _spaceshipPosition) < hitRadius)
+                    {
+                        _playerHealth--;
+                        enemy.EnemyLasers.RemoveAt(i);
+                        _hitIndicatorTimer = 0f;
+                    }
+                }
+
             }
-
         }
-
-
-
         base.Update(gameTime);
     }
 
@@ -207,8 +229,11 @@ public class Game1 : Game
 
         // Begin the sprite batch to prepare for rendering.
         _spriteBatch.Begin();
-        // Draw the spaceship texture
-        _spriteBatch.Draw(_spaceship, _spaceshipPosition, null, Color.White, _spaceshipRotate, new Vector2(_spaceship.Width * 0.5f, _spaceship.Height * 0.5f), _spaceshipScale, SpriteEffects.None, 0.0f);
+        Color shipColor = _hitIndicatorTimer < 0.2f ? Color.Red : Color.White;
+        if (playerIsAlive == true)
+        {
+            _spriteBatch.Draw(_spaceship, _spaceshipPosition, null, shipColor, _spaceshipRotate, new Vector2(_spaceship.Width * 0.5f, _spaceship.Height * 0.5f), _spaceshipScale, SpriteEffects.None, 0.0f);
+        }
 
         foreach (Laser laser in _activeLasers)
         {
