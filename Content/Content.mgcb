@@ -13,6 +13,13 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin font/File.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font/File.spritefont;font/UIFont.spritefont
+
 #begin images/laserBlastRed.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -41,6 +41,8 @@ public class Game1 : Game
     private int _levelCounter;
     private bool _gamePause = false;
     private ButtonState _previousStartButtonState = ButtonState.Released;
+    private SpriteFont _uiFont;
+
 
 
 
@@ -69,6 +71,7 @@ public class Game1 : Game
         _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
         _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
         _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
+        _uiFont = Content.Load<SpriteFont>("font/UIFont");
     }
 
     protected override void Update(GameTime gameTime)
@@ -216,14 +219,17 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        float currentTriggerValue = GamePad.GetState(PlayerIndex.One).Triggers.Right;
-        if (currentTriggerValue > 0.2f && _lastTriggerValue <= 0.2f)
+        if (!_gamePause)
         {
-            Vector2 offset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate)) * 5f;
-            _activeLasers.Add(new Laser(_spaceshipPosition + offset, _spaceshipRotate));
-        }
+            float currentTriggerValue = GamePad.GetState(PlayerIndex.One).Triggers.Right;
+            if (currentTriggerValue > 0.2f && _lastTriggerValue <= 0.2f)
+            {
+                Vector2 offset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate)) * 5f;
+                _activeLasers.Add(new Laser(_spaceshipPosition + offset, _spaceshipRotate));
+            }
 
-        _lastTriggerValue = currentTriggerValue;
+            _lastTriggerValue = currentTriggerValue;
+        }
 
         GraphicsDevice.Clear(new Color(70, 70, 70));
 
@@ -265,6 +271,17 @@ public class Game1 : Game
         foreach (var enemy in _enemies)
         {
             enemy.Draw(_spriteBatch);
+        }
+
+        //Pause screen
+        if (_gamePause)
+        {
+            string pauseText = "PAUSED";
+            Vector2 textSize = _uiFont.MeasureString(pauseText);
+            Vector2 screenCenter = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height) * 0.5f;
+            Vector2 textPosition = screenCenter - textSize * 0.5f;
+
+            _spriteBatch.DrawString(_uiFont, pauseText, textPosition, Color.White);
         }
         _spriteBatch.End();
         base.Draw(gameTime);

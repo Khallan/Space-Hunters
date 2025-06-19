@@ -36,3 +36,4 @@ C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\images\spaceship_type4.xnb
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\images\laserBlastRed.xnb
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\obj\Debug\net8.0\MazeHunter.sourcelink.json
+C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\UIFont.xnb

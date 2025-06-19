@@ -4,6 +4,7 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/font/File.spritefont</File>
     <File>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/images/laserBlastRed.png</File>
     <File>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/images/spaceship_alt.png</File>
     <File>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/images/spaceship_type2.png</File>
@@ -12,6 +13,7 @@
     <File>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/images/spaceship.png</File>
   </SourceFiles>
   <DestFiles>
+    <File>font/UIFont.spritefont</File>
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
