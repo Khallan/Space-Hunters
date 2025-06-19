@@ -15,10 +15,9 @@ namespace MazeHunter
         public bool IsAlive = true;
         private int _health = 3;
         private Texture2D _laserBlastGreen;
-        private float _laserBlastGreenRotate;
         private const float _laserBlastGreenScale = 1.0f;
         private List<Laser> _enemyLasers = new();
-        private float _shootCooldown = 1.5f; // seconds between shots
+        public List<Laser> EnemyLasers => _enemyLasers;
         private float _timeSinceLastShot = 0f;
 
         public Enemy(Texture2D texture, Vector2 startPos, Texture2D laserBlastGreen)
@@ -51,8 +50,7 @@ namespace MazeHunter
                 _enemyLasers[i].Update();
 
                 // Remove laser if off-screen (optional, prevents infinite lasers)
-                if (_enemyLasers[i].Position.X < 0 || _enemyLasers[i].Position.X > 1400 ||  // assuming screen width 1400
-                    _enemyLasers[i].Position.Y < 0 || _enemyLasers[i].Position.Y > 900)     // assuming screen height 900
+                if (_enemyLasers[i].Position.X < 0 || _enemyLasers[i].Position.X > 1400 || _enemyLasers[i].Position.Y < 0 || _enemyLasers[i].Position.Y > 900)     
                 {
                     _enemyLasers.RemoveAt(i);
                 }

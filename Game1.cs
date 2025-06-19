@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Principal;
 using Microsoft.Xna.Framework;
@@ -25,6 +26,7 @@ public class Game1 : Game
     private float _laserBlastRedRotate;
     private const float _laserBlastRedScale = 1.0f;
     private List<Laser> _activeLasers = new();
+    private float _timeSinceLastCollision = 0.0f;
 
     //Enemy 
     private Texture2D _enemySpaceship;
@@ -121,7 +123,7 @@ public class Game1 : Game
                 continue;
             }
 
-            // Check against all enemies
+            // Check against all enemies if an enemy got hit
             foreach (var enemy in _enemies)
             {
                 if (enemy.CheckCollision(_activeLasers[i].Position))
@@ -161,6 +163,32 @@ public class Game1 : Game
             _levelCounter++;
         }
 
+        //Player collison check
+        foreach (var enemy in _enemies)
+        {
+            float collisionRadius = 65f;
+            _timeSinceLastCollision += (float)gameTime.ElapsedGameTime.TotalSeconds; //Move this outside the foreach if i want to ignore pileup
+            if (enemy.IsAlive && Vector2.Distance(enemy.Position, _spaceshipPosition) < collisionRadius && _timeSinceLastCollision > 1.0f)
+            {
+                _playerHealth--;
+                _timeSinceLastCollision = 0f;
+
+            }
+            for (int i = enemy.EnemyLasers.Count - 1; i >= 0; i--)
+            {
+                Laser laser = enemy.EnemyLasers[i];
+                float hitRadius = 40f;
+                if (Vector2.Distance(laser.Position, _spaceshipPosition) < hitRadius)
+                {
+                    _playerHealth--;
+                    enemy.EnemyLasers.RemoveAt(i);
+                }
+            }
+
+        }
+
+
+
         base.Update(gameTime);
     }
 
@@ -188,7 +216,7 @@ public class Game1 : Game
                 _laserBlastRed,
                 laser.Position,
                 null,
-                Color.White,
+                Color.LightBlue,
                 laser.Rotation,
                 new Vector2(_laserBlastRed.Width * 4.0f, _laserBlastRed.Height * 0.6f),
                 _laserBlastRedScale,
@@ -199,7 +227,7 @@ public class Game1 : Game
                 _laserBlastRed,
                 laser.Position,
                 null,
-                Color.White,
+                Color.LightBlue,
                 laser.Rotation,
                 new Vector2(_laserBlastRed.Width * -3.05f, _laserBlastRed.Height * 0.6f),
                 _laserBlastRedScale,
