@@ -34,6 +34,20 @@
 /processorParam:TextureFormat=Compressed
 /build:font/playerHealth.spritefont
 
+#begin font/spaceJetFightersText.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font/spaceJetFightersText.spritefont
+
+#begin font/startScreenFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font/startScreenFont.spritefont
+
 #begin images/laserBlast.png
 /importer:TextureImporter
 /processor:TextureProcessor
