@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFile>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/font/File.spritefont</SourceFile>
-  <SourceTime>2025-06-19T13:54:29.1299815-04:00</SourceTime>
+  <SourceTime>2025-06-25T13:25:43.9545075-04:00</SourceTime>
   <DestFile>C:/Users/khall/Desktop/Programs/VScode Programs/MazeHunter/MazeHunter/Content/bin/DesktopGL/Content/font/pauseText.xnb</DestFile>
-  <DestTime>2025-06-19T14:29:21.9727632-04:00</DestTime>
+  <DestTime>2025-06-26T13:42:22.0212486-04:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2025-06-02T06:31:02-04:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>

@@ -20,6 +20,13 @@
 /processorParam:TextureFormat=Compressed
 /build:font/File.spritefont;font/pauseText.spritefont
 
+#begin font/gameOver.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font/gameOver.spritefont
+
 #begin font/playerHealth.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -27,7 +34,7 @@
 /processorParam:TextureFormat=Compressed
 /build:font/playerHealth.spritefont
 
-#begin images/laserBlastRed.png
+#begin images/laserBlast.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -37,7 +44,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:images/laserBlastRed.png
+/build:images/laserBlast.png
 
 #begin images/spaceship_alt.png
 /importer:TextureImporter

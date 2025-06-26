@@ -39,3 +39,6 @@ C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\obj\Debug\
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\UIFont.xnb
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\pauseText.xnb
 C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\playerHealth.xnb
+C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\gameOver.spritefont
+C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\font\gameOver.xnb
+C:\Users\khall\Desktop\Programs\VScode Programs\MazeHunter\MazeHunter\bin\Debug\net8.0\Content\images\laserBlast.xnb

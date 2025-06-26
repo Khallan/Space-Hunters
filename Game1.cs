@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Principal;
+using System.Xml;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,9 +26,9 @@ public class Game1 : Game
     private float _hitIndicatorTimer = 0.0f;
 
     //Player lasers
-    private Texture2D _laserBlastRed;
-    private float _laserBlastRedRotate;
-    private const float _laserBlastRedScale = 1.0f;
+    private Texture2D _laserBlast;
+    private float _laserBlastRotate;
+    private const float _laserBlastScale = 1.0f;
     private List<Laser> _activeLasers = new();
     private float _timeSinceLastCollision = 0.0f;
 
@@ -44,6 +45,7 @@ public class Game1 : Game
     private bool _gamePause = false;
     private ButtonState _previousStartButtonState = ButtonState.Released;
     private SpriteFont _pauseText;
+    private SpriteFont _gameOverText;
 
 
 
@@ -68,12 +70,16 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
+        //Player
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _spaceship = Content.Load<Texture2D>("images/spaceship");
-        _laserBlastRed = Content.Load<Texture2D>("images/laserBlastRed");
+        _laserBlast = Content.Load<Texture2D>("images/laserBlast");
+        _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.5f), Window.ClientBounds.Height * 0.5f);
+        //Enemy
         _enemySpaceship = Content.Load<Texture2D>("images/spaceship_type2");
-        _spaceshipPosition = new Vector2((float)(Window.ClientBounds.Width * 0.0f + _spaceship.Width * 0.5 * 0.3), Window.ClientBounds.Height * 0.5f);
+        //Game
         _pauseText = Content.Load<SpriteFont>("font/PauseText");
+        _gameOverText = Content.Load<SpriteFont>("font/gameOver");
 
     }
 
@@ -87,14 +93,14 @@ public class Game1 : Game
         }
         _previousStartButtonState = currentStartState;
 
-
-        if (!_gamePause)
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        {
+            Exit();
+        }
+        if (!_gamePause && playerIsAlive)
         {
             _masterGameTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
+
 
             // Movement ---------------------------------------------------------------------------------------------
             float halfW = _spaceship.Width * _spaceshipScale * 0.5f;
@@ -117,11 +123,11 @@ public class Game1 : Game
                 {
                     if (GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed)
                     {
-                        _spaceshipPosition += leftStick * 7.0f; //Speed boost
+                        //_spaceshipPosition += leftStick * 7.0f; //Speed boost
                     }
                     else
                     {
-                        _spaceshipPosition += leftStick * 3.5f; //Regular traveling
+                        _spaceshipPosition += leftStick * 6.0f; //Regular traveling
                     }
 
                     // Clamp position to screen bounds
@@ -131,14 +137,14 @@ public class Game1 : Game
                 if (rightStick.LengthSquared() > 0.1f)
                 {
                     _spaceshipRotate = (float)Math.Atan2(rightStick.Y, rightStick.X) + MathHelper.PiOver2;
-                    _laserBlastRedRotate = _spaceshipRotate;
+                    _laserBlastRotate = _spaceshipRotate;
 
                 }
 
             }
 
             Vector2 laserOffset = new Vector2((float)Math.Sin(_spaceshipRotate), -(float)Math.Cos(_spaceshipRotate));
-            _laserBlastRedRotate = _spaceshipRotate;
+            _laserBlastRotate = _spaceshipRotate;
 
             for (int i = _activeLasers.Count - 1; i >= 0; i--)
             {
@@ -184,7 +190,7 @@ public class Game1 : Game
                         int spawn_y = rng.Next(Window.ClientBounds.Height * -1, Window.ClientBounds.Height * 2);
                         spawnPos = new Vector2(spawn_x, spawn_y);
                     } while (spawnPos.X >= 0 && spawnPos.X <= Window.ClientBounds.Width && spawnPos.Y >= 0 && spawnPos.Y <= Window.ClientBounds.Height);
-                    _enemies.Add(new Enemy(_enemySpaceship, spawnPos, _laserBlastRed));
+                    _enemies.Add(new Enemy(_enemySpaceship, spawnPos, _laserBlast));
 
 
                 }
@@ -228,7 +234,7 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        if (!_gamePause)
+        if (!_gamePause && playerIsAlive)
         {
             float currentTriggerValue = GamePad.GetState(PlayerIndex.One).Triggers.Right;
             if (currentTriggerValue > 0.2f && _lastTriggerValue <= 0.2f)
@@ -253,24 +259,24 @@ public class Game1 : Game
         foreach (Laser laser in _activeLasers)
         {
             _spriteBatch.Draw(
-                _laserBlastRed,
+                _laserBlast,
                 laser.Position,
                 null,
                 Color.LightBlue,
                 laser.Rotation,
-                new Vector2(_laserBlastRed.Width * 4.0f, _laserBlastRed.Height * 0.6f),
-                _laserBlastRedScale,
+                new Vector2(_laserBlast.Width * 4.0f, _laserBlast.Height * 0.6f),
+                _laserBlastScale,
                 SpriteEffects.None,
                 0.0f
             );
             _spriteBatch.Draw(
-                _laserBlastRed,
+                _laserBlast,
                 laser.Position,
                 null,
                 Color.LightBlue,
                 laser.Rotation,
-                new Vector2(_laserBlastRed.Width * -3.05f, _laserBlastRed.Height * 0.6f),
-                _laserBlastRedScale,
+                new Vector2(_laserBlast.Width * -3.05f, _laserBlast.Height * 0.6f),
+                _laserBlastScale,
                 SpriteEffects.None,
                 0.0f
             );
@@ -293,10 +299,21 @@ public class Game1 : Game
             _spriteBatch.DrawString(_pauseText, pauseText, textPosition, Color.White);
         }
         string _playerHealthText = _playerHealth.ToString();
-        Vector2 _playerHealthtextSize = _pauseText.MeasureString(_playerHealthText);
+        //Vector2 _playerHealthtextSize = _pauseText.MeasureString(_playerHealthText);
         Vector2 screenTopRight = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height) * 0.0f;
         Vector2 _playerHeathTextPostion = screenTopRight;
-        _spriteBatch.DrawString(_pauseText,_playerHealthText, _playerHeathTextPostion, Color.White);
+
+        if (_playerHealth >= 0)
+        {
+            _spriteBatch.DrawString(_pauseText, _playerHealthText, _playerHeathTextPostion, Color.White);
+        }
+        if (!playerIsAlive)
+        {
+            string gameover = "GAME OVER";
+            Vector2 textMiddlePoint = _gameOverText.MeasureString(gameover) * 0.5f;
+            Vector2 position = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height) * 0.5f;
+            _spriteBatch.DrawString(_gameOverText, gameover, position, Color.PaleVioletRed, 0, textMiddlePoint, 1.0f, SpriteEffects.None, 0.5f);
+        }
 
         _spriteBatch.End();
         base.Draw(gameTime);
